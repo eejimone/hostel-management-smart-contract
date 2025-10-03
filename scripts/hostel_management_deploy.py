@@ -84,6 +84,60 @@ def make_payment(contract, amount, account):
 
 
 
+def update_hostel_details(contract, school_name, hostel_name, location, hostel_manager, total_rooms, room_price, account):
+    """Update hostel details."""
+    print("\n\n\n\nUpdating hostel details...")
+    tx = contract.updateHostelDetails(
+        school_name,
+        hostel_name,
+        location,
+        hostel_manager,
+        total_rooms,
+        room_price,
+        {"from": account}
+    )
+    tx.wait(1)
+    print("Hostel details updated successfully.")
+    return tx
+
+
+def update_student_details(contract, student_name, age, gender, contact, address, account):
+    """Update a student Detail"""
+    print("\n\n\n\nUpdating student details...")
+    tx = contract.updateStudentDetails(
+        student_name,
+        age,
+        gender,
+        contact,
+        address,
+        {"from": account}
+    )
+    tx.wait(1)
+    print("Student details updated successfully.")
+    print(f"Name: {student_name}")
+    print(f"Age: {age}")
+    print(f"Gender: {gender}")
+    print(f"Contact: {contact}")
+    print(f"Address: {address}")
+    return tx
+
+
+
+def suspend_student(contract, student_name, reason, account):
+    """Suspend a student"""
+    print("\n\n\n\nSuspending student...")
+    tx = contract.suspendStudent(
+        student_name,
+        reason,
+        {"from": account}
+    )
+    tx.wait(1)
+    print(f"Student {student_name} suspended successfully.")
+    print(f"Reason: {reason}")
+    return tx
+
+
+
 def main():
     # Deploy the hostel contract
     contract = deploy_hostel(
@@ -110,16 +164,48 @@ def main():
     # Get student details
     get_student_details(contract)
 
-    # Make payment (must be done BEFORE vacating)
+    # Make payment
     make_payment(
         contract=contract,
         amount=50000,
         account=accounts[0]
     )
 
-    # Vacate the room (should be done AFTER payment)
-    vacate_room(
+    # Update hostel details
+    update_hostel_details(
         contract=contract,
-        student_name="Banx",
+        school_name="University of Ibadan",
+        hostel_name="Queen Elizabeth Hall",
+        location="UI Campus",
+        hostel_manager="Mrs. Williams",
+        total_rooms=150,
+        room_price=75000,
         account=accounts[0]
     )
+
+    # Update student details
+    update_student_details(
+        contract=contract,
+        student_name="Evidence Ejimone",
+        age=21,
+        gender="Male",
+        contact="0987654321",
+        address="456 Elm St",
+        account=accounts[0]
+    )
+
+    # Suspend student (this will automatically vacate the room)
+    # Note: The student name must match the current student in the contract
+    suspend_student(
+        contract=contract,
+        student_name="Evidence Ejimone",
+        reason="Violation of hostel rules",
+        account=accounts[0]
+    )
+    
+    # Verify student was cleared after suspension
+    print("\n\n\n\nVerifying student details after suspension...")
+    final_details = contract.getStudentDetails()
+    print(f"Student Name: {final_details[0] if final_details[0] else '(Empty - Student suspended)'}")
+    print(f"Available Rooms: {contract.availableRooms()}")
+    print(f"Occupied Rooms: {contract.occupiedRooms()}")
