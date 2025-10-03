@@ -138,6 +138,27 @@ def suspend_student(contract, student_name, reason, account):
 
 
 
+def book_room(contract, number_of_rooms, account):
+    """Book a room"""
+    print(f"\n\n\n\nBooking {number_of_rooms} room(s)...")
+    tx = contract.bookRooms(number_of_rooms, {"from": account})
+    tx.wait(1)
+    print(f"{number_of_rooms} room(s) booked successfully.")
+    print(f"Available Rooms: {contract.availableRooms()}")
+    print(f"Occupied Rooms: {contract.occupiedRooms()}")
+    return tx
+
+
+def store_in_database(contract, account):
+    """Store current student details in the database."""
+    print("\n\n\n\nStoring student details in database...")
+    tx = contract.storeInDataBase({"from": account})
+    tx.wait(1)
+    print("Student details stored in database successfully.")
+    return tx
+
+
+
 def main():
     # Deploy the hostel contract
     contract = deploy_hostel(
@@ -196,16 +217,24 @@ def main():
 
     # Suspend student (this will automatically vacate the room)
     # Note: The student name must match the current student in the contract
+    # Store in database (before suspension, while student data still exists)
+    store_in_database(
+        contract=contract,
+        account=accounts[0]
+    )
+
+    # Suspend student
     suspend_student(
         contract=contract,
         student_name="Evidence Ejimone",
         reason="Violation of hostel rules",
         account=accounts[0]
     )
-    
+
     # Verify student was cleared after suspension
     print("\n\n\n\nVerifying student details after suspension...")
     final_details = contract.getStudentDetails()
     print(f"Student Name: {final_details[0] if final_details[0] else '(Empty - Student suspended)'}")
     print(f"Available Rooms: {contract.availableRooms()}")
     print(f"Occupied Rooms: {contract.occupiedRooms()}")
+    print(f"\n✅ All hostel management functions have been successfully demonstrated!")
