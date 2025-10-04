@@ -37,7 +37,7 @@ def test_update_student_details(classroom_contract):
     contract = classroom_contract
     contract.registerStudent(
         "Banx", "banx@gmail.com", 20, "USN001", "Computer Science",
-        ["Math", "Physics", "Programming"], "Prof. Smith"
+        ["Math", "Physics", "Programming"], "Prof. Smith", {'from': accounts[0]}
     )
     contract.updateStudentDetails("Banx Updated", 21, "banx_updated@gmail.com", {'from': accounts[0]})
     updated_details = contract.getStudentDetails()
@@ -107,6 +107,68 @@ def test_clear_student_list(classroom_contract):
     )
     contract.clearStudentList({'from': accounts[0]})
     assert contract.getStudentCount() == 0
+
+
+def test_check_student_suspension_by_name(classroom_contract):
+    """Test checking student suspension status by name."""
+    contract = classroom_contract
+    # Register and suspend main student
+    contract.registerStudent(
+        "Alice", "alice@email.com", 20, "USN001", "CS",
+        ["Math"], "Prof. Smith", {'from': accounts[0]}
+    )
+    contract.suspendStudent("Alice", "Late to class", 86400, {'from': accounts[0]})
+    
+    # Check suspension by name
+    result = contract.checkStudentSuspensionByName("Alice")
+    assert result[0] == True  # is suspended
+    assert result[1] == "Late to class"  # suspension reason
+    assert result[3] == 86400  # suspension duration
+
+
+def test_check_student_suspension_by_usn(classroom_contract):
+    """Test checking student suspension status by USN."""
+    contract = classroom_contract
+    # Register and suspend main student
+    contract.registerStudent(
+        "Bob", "bob@email.com", 21, "USN002", "CS",
+        ["Physics"], "Prof. Johnson", {'from': accounts[0]}
+    )
+    contract.suspendStudent("Bob", "Cheating", 172800, {'from': accounts[0]})
+    
+    # Check suspension by USN
+    result = contract.checkStudentSuspensionByUSN("USN002")
+    assert result[0] == True  # is suspended
+    assert result[1] == "Cheating"  # suspension reason
+    assert result[3] == 172800  # suspension duration
+
+
+def test_check_student_in_list_by_name(classroom_contract):
+    """Test checking suspension for students in the list by name."""
+    contract = classroom_contract
+    # Add student to list
+    contract.addStudentToList(
+        "Charlie", "charlie@email.com", 22, "USN003", "CS",
+        ["Math"], "Prof. Smith", {'from': accounts[0]}
+    )
+    
+    # Check not suspended initially
+    result = contract.checkStudentSuspensionByName("Charlie")
+    assert result[0] == False  # not suspended
+
+
+def test_check_student_in_list_by_usn(classroom_contract):
+    """Test checking suspension for students in the list by USN."""
+    contract = classroom_contract
+    # Add student to list
+    contract.addStudentToList(
+        "David", "david@email.com", 23, "USN004", "CS",
+        ["Physics"], "Prof. Johnson", {'from': accounts[0]}
+    )
+    
+    # Check not suspended initially
+    result = contract.checkStudentSuspensionByUSN("USN004")
+    assert result[0] == False  # not suspended
 
 
 # ============ Teacher Tests ============

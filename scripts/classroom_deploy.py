@@ -79,6 +79,47 @@ def update_teacher_details(contract, name, new_age, new_email):
     print(f"Updated teacher details: {name}, Age: {new_age}, Email: {new_email}")
     return f"Updated teacher {name} details to Age: {new_age}, Email: {new_email}"
 
+def check_studentSuspension_by_name_or_usn(contract, identifier):
+    """Check student suspension status by name or USN."""
+    try:
+        if identifier.startswith("USN"):
+            # Check by USN
+            result = contract.checkStudentSuspensionByUSN(identifier)
+            print(f"\n--- Checking suspension for USN: {identifier} ---")
+        else:
+            # Check by name
+            result = contract.checkStudentSuspensionByName(identifier)
+            print(f"\n--- Checking suspension for Name: {identifier} ---")
+        
+        is_suspended, reason, timestamp, duration = result
+        
+        if is_suspended:
+            print(f"✗ Status: SUSPENDED")
+            print(f"  Reason: {reason}")
+            print(f"  Suspended at: {timestamp}")
+            print(f"  Duration: {duration} seconds ({duration // 86400} days)")
+        else:
+            print(f"✓ Status: ACTIVE (Not suspended)")
+        
+        return result
+        
+    except Exception as e:
+        print(f"✗ Error: {str(e)}")
+        return None
+
+
+
+
+def  get_teacher_details(contract):
+    deployer = get_account()
+    try:
+        details = contract.getTeacherDetails({"from": deployer})
+        print(f"Teacher Details: {details}")
+        return details
+    except Exception as e:
+        print(f"Error fetching teacher details: {str(e)}")
+        return None
+
 def main():
     contract = deploy()
     
@@ -98,10 +139,23 @@ def main():
 
     # Update the main student's details
     update_student_details(contract, "Alice Updated", 21, "evidence@gmail.com")
+    
     # Suspend a student
-    suspend_student(contract, "Alice Updated", "Cheating", 7)  # Suspend Alice for 7 days due to cheating
+    suspend_student(contract, "Alice Updated", "Cheating", 604800)  # 7 days in seconds
+    
+    # Check suspension status by name
+    check_studentSuspension_by_name_or_usn(contract, "Alice Updated")
+    
+    # Check suspension status by USN
+    check_studentSuspension_by_name_or_usn(contract, "USN001")
+    
+    # Check a non-suspended student
+    check_studentSuspension_by_name_or_usn(contract, "Bob")
+    check_studentSuspension_by_name_or_usn(contract, "USN002")
 
     # Register a teacher
     register_teacher(contract, "Prof. Mahesh", "maheshtr@jainuniversity.ac.in", 45, "CS", ["Math", "Physics"])
+
+    get_teacher_details(contract)
     # Update the teacher's details
     update_teacher_details(contract, "Prof. Mahesh", 46, "maheshtr@jainuniversity.ac.in")

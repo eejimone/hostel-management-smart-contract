@@ -103,6 +103,42 @@ contract Classroom {
         return false;
     }
 
+    function checkStudentSuspensionByName(string memory _name) public view returns (bool, string memory, uint256, uint256) {
+        // Check main student first
+        if (keccak256(abi.encodePacked(student.name)) == keccak256(abi.encodePacked(_name))) {
+            bool isSuspended = !student.isEnrolled && block.timestamp < student.suspensionTimestamp + student.suspensionDuration;
+            return (isSuspended, student.suspensionReason, student.suspensionTimestamp, student.suspensionDuration);
+        }
+        
+        // Check students in the list
+        for (uint256 i = 0; i < students.length; i++) {
+            if (keccak256(abi.encodePacked(students[i].name)) == keccak256(abi.encodePacked(_name))) {
+                bool isSuspended = !students[i].isEnrolled && block.timestamp < students[i].suspensionTimestamp + students[i].suspensionDuration;
+                return (isSuspended, students[i].suspensionReason, students[i].suspensionTimestamp, students[i].suspensionDuration);
+            }
+        }
+        
+        revert("Student not found");
+    }
+
+    function checkStudentSuspensionByUSN(string memory _usn) public view returns (bool, string memory, uint256, uint256) {
+        // Check main student first
+        if (keccak256(abi.encodePacked(student.usn)) == keccak256(abi.encodePacked(_usn))) {
+            bool isSuspended = !student.isEnrolled && block.timestamp < student.suspensionTimestamp + student.suspensionDuration;
+            return (isSuspended, student.suspensionReason, student.suspensionTimestamp, student.suspensionDuration);
+        }
+        
+        // Check students in the list
+        for (uint256 i = 0; i < students.length; i++) {
+            if (keccak256(abi.encodePacked(students[i].usn)) == keccak256(abi.encodePacked(_usn))) {
+                bool isSuspended = !students[i].isEnrolled && block.timestamp < students[i].suspensionTimestamp + students[i].suspensionDuration;
+                return (isSuspended, students[i].suspensionReason, students[i].suspensionTimestamp, students[i].suspensionDuration);
+            }
+        }
+        
+        revert("Student not found");
+    }
+
     constructor() {
         owner = msg.sender;
     }
