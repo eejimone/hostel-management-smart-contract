@@ -6,3 +6,6 @@ compiler:
       runs: 200
     evmVersion: istanbul
     viaIR: true
+
+networks:
+  default: ganache
