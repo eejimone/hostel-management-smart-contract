@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.0;
 
-contract classroom {
+contract Classroom {
     address public owner;
     struct Student {
         string name;
@@ -76,8 +76,6 @@ contract classroom {
         student.name = _name;
         student.age = _age;
         student.emailId = _emailId;
-        require(keccak256(abi.encodePacked(student.usn)) == keccak256(abi.encodePacked(_name)), "Student USN does not match the registered student.");
-
     }
     function suspendStudent(string memory _name, string memory _reason, uint256 suspensionDuration) public {
         require(msg.sender == owner, "Only the contract owner can suspend a student.");
