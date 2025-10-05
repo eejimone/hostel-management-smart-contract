@@ -1,4 +1,4 @@
-from brownie import accounts, SimpleStorage
+from brownie import accounts, SimpleStorage, web3 as w3
 
 
 def deploy():
@@ -6,6 +6,8 @@ def deploy():
     # Get the account to deploy from
     account = accounts[0]
     print(f"Deploying from account: {account}")
+
+
     
     # Deploy the contract
     simple_storage = SimpleStorage.deploy({"from": account})
@@ -31,6 +33,15 @@ def deploy():
     print(f"Contract ABI: {contract_abi}")
     print(f"Contract bytecode: {contract_factory.bytecode}")
     
+
+    # Query blocks for transactions that include the contract address in the "to" field
+    block = w3.eth.get_block("latest")
+    for tx_hash in block.transactions:
+        tx = w3.eth.get_transaction(tx_hash)
+        if tx.to == simple_storage.address:
+            print(f"Found transaction to contract: {tx_hash}")
+
+
     # Return the deployed contract
     return simple_storage
 
